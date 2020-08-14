@@ -1,0 +1,75 @@
+# Expense-Budget-Notify
+function getData() {
+  //get sheet
+  var sheetId = "1mkLl-nP0t4Px_8Z45p8VrFbenCScnmBwxYROjLvh4TQ";
+  var currentSheet = SpreadsheetApp.openById(sheetId).getSheetByName("Form");
+  
+  var lastRow = currentSheet.getLastRow();
+  var lastColumn = currentSheet.getLastColumn();
+  
+  Logger.log("Last Row :" + lastRow);
+  Logger.log("Last Column :" + lastColumn);
+  
+  var headerData = currentSheet.getRange("A1:H1").getValues()[0];
+  var lastRowData = currentSheet.getRange("A" + lastRow + ":H" + lastRow).getValues()[0];
+  
+  Logger.log("Header :" + headerData);
+  Logger.log("Last Row Data :" + lastRowData);   
+     
+  var data = lastRowData[0] + '"'
+  var array1 = splitData(data);
+  Logger.log("Time :" + array1);
+  lastRowData[0] = array1[0]
+  headerData[0] = "Time update"
+  Logger.log("Time :" + lastRowData[0]);
+  Logger.log("Time :" + headerData[0]);
+  
+  //set message
+  var message = "";
+  for (i = 0; i < lastColumn - 1; i++) {
+    if(headerData[i] == "Time update" ||headerData[i] == "Project" || headerData[i] == "รายการ" || headerData[i] == "ราคา" || headerData[i] == "ผู้จ่าย"){
+       message += "\n" + headerData[i] + " : " + lastRowData[i];
+    }
+  }
+  
+  Logger.log("Data Message :" + message);
+  
+  //set line notify
+  sendMessage(message);
+}
+
+function sendMessage(message) {
+  var lineNotifyEndPoint = "https://notify-api.line.me/api/notify";
+  var accessToken = "50LWpUjVFFFnroD896EQ4tjtgr9HoAmQkxxJv2G6v1q";
+
+  var formData = {
+    "message": message
+  };
+  
+  var options = {
+    "headers" : {"Authorization" : "Bearer " + accessToken},
+    "method" : 'post',
+    "payload" : formData
+  };
+
+  try {
+    var response = UrlFetchApp.fetch(lineNotifyEndPoint, options);
+  }
+  
+  catch (error) {
+    Logger.log(error.name + "：" + error.message);
+    return;
+  }
+    
+  if (response.getResponseCode() === 200) {
+    Logger.log("Sending message completed.");
+  } 
+}
+
+function splitData(Data) {
+  var array1 = [{}];
+  var string1 = Data;
+
+  array1 = Data.split(" G");
+  return array1
+}
